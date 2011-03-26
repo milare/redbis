@@ -25,11 +25,6 @@ module Redbis
       def merge_defaults(values={})
         self.defaults = (self.defaults || {}).merge(values)
       end
-
-      def add_errors_attribute
-        self.create_attribute(:errors, :default => [])
-      end
-
     end
 
     def self.included(base)
@@ -40,7 +35,12 @@ module Redbis
       instance_eval "@#{field.to_s} = value "
     end
 
-
+    def append_instance_attribute(field)
+      self.instance_eval <<-APPEND, __FILE__, __LINE__ + 1
+        def #{field}; @#{field}; end
+        def #{field}=(value); @#{field} = value; end
+      APPEND
+    end
 
     def instance_attributes=(attributes)
       attributes.stringify_keys!

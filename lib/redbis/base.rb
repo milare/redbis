@@ -5,13 +5,13 @@ module Redbis
     include Callbacks
     include Connection
     include Validations
+    include Errors
 
     def self.inherited(child)
       self.prepare_attributes(child)
       child.create_attribute(:id, :default => nil)
       child.cattr_accessor :table_key
       child.table_key = child.to_s.downcase.pluralize
-      child.add_errors_attribute
     end 
     
     def initialize(attributes = {})
@@ -22,7 +22,12 @@ module Redbis
     
     def save
       run_callback(:before_validation)
-      perform_validation
+      begin
+        perform_validation
+      rescue Exception => e
+        add_error e
+        raise e
+      end
       run_callback(:after_validation)
 
       run_callback(:before_save)

@@ -6,6 +6,7 @@ require 'redbis/attributes'
 require 'redbis/connection'
 require 'redbis/callbacks'
 require 'redbis/validations'
+require 'redbis/errors'
 require 'redbis/base'
 require 'redis'
 

@@ -17,7 +17,7 @@ module Redbis
         end
       rescue NoMethodError
       rescue Exception => e
-        self.errors << e
+        self.add_error e
         raise e
       end
     end

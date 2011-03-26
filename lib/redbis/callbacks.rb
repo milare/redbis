@@ -1,7 +1,9 @@
 module Redbis
   module Callbacks
 
-    CALLBACKS = [:before_create, :after_create]
+    CALLBACKS = [:before_initialize, :after_initialize, 
+                 :before_validation, :after_validation,
+                 :before_save, :after_save]
 
     def self.included(base)
       base.extend(ClassMethods)
@@ -13,7 +15,10 @@ module Redbis
         methods.each do |method|
           self.send(method.to_s)
         end
-      rescue
+      rescue NoMethodError
+      rescue Exception => e
+        self.errors << e
+        raise e
       end
     end
     

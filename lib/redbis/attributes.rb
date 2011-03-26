@@ -26,12 +26,22 @@ module Redbis
         self.defaults = (self.defaults || {}).merge(values)
       end
 
+      def add_errors_attribute
+        self.create_attribute(:errors, :default => [])
+      end
+
     end
 
     def self.included(base)
       base.extend(ClassMethods)
     end
     
+    def set_attribute(field, value = nil)
+      instance_eval "@#{field.to_s} = value "
+    end
+
+
+
     def instance_attributes=(attributes)
       attributes.stringify_keys!
       default = default_attributes

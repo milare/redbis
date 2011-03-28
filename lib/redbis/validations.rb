@@ -12,18 +12,25 @@ module Redbis
     end
 
     def perform_validation
-      self.class.validations.keys.each do |kind|
-        if kind == :presence
-          self.class.validations[kind].each do |column|
-            value = self.send(column.to_sym)
-            raise NilFieldError if !value
-            raise EmptyFieldError if value.empty?
+      run_callback(:before_validation)
+      begin
+        self.class.validations.keys.each do |kind|
+          if kind == :presence
+            self.class.validations[kind].each do |column|
+              value = self.send(column.to_sym)
+              raise NilFieldError if !value
+              raise EmptyFieldError if value.empty?
+            end
+          else
           end
-        else
         end
+      rescue Exception => e
+        self.add_error e
+        return false
       end
+      run_callback(:after_validation)
+      self.has_errors?
     end
-
 
     module ClassMethods
       

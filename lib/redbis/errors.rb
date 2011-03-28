@@ -9,6 +9,15 @@ module Redbis
         self.errors = [error]
       end
     end
+
+    def has_errors?
+      begin
+        instance_errors = self.errors
+      rescue NoMethodError
+        return false
+      end
+      instance_errors.size > 0 ? true : false
+    end
   end
 
   module Validations

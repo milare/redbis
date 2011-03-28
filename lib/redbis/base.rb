@@ -1,11 +1,12 @@
 module Redbis
   
   class Base
+    include Errors
     include Attributes
     include Callbacks
     include Connection
     include Validations
-    include Errors
+    include Finders
 
     def self.inherited(child)
       self.prepare_attributes(child)
@@ -21,23 +22,18 @@ module Redbis
     end
     
     def save
-      run_callback(:before_validation)
-      begin
-        perform_validation
-      rescue Exception => e
-        add_error e
-        raise e
-      end
-      run_callback(:after_validation)
+      perform_validation
+      if !has_errors?
 
-      run_callback(:before_save)
-      if !self.id
-        self.set_attribute(:id, Time.now.to_i)
-      end
+        run_callback(:before_save)
+        if !self.id
+          self.set_attribute(:id, Time.now.to_i)
+        end
 
-      attributes = Marshal.dump(self)
-      self.class.connection.set("#{self.table_key}/#{self.id}", attributes)
-      run_callback(:after_save)
+        attributes = Marshal.dump(self)
+        self.class.connection.set("#{self.table_key}/#{self.id}", attributes)
+        run_callback(:after_save)
+      end
     end
 
     class << self
@@ -49,34 +45,6 @@ module Redbis
       def field(name, args = {})
         create_attribute(name, args)
         create_finder_for(name)
-      end
-
-      def create_finder_for(field)
-        class_eval <<-FINDER, __FILE__, __LINE__ + 1
-          def self.find_by_#{field}(value)
-            all.each do |content|
-              if content.#{field.to_s} == value
-                return content
-              end
-            end
-            nil
-          end
-        FINDER
-      end
-
-      def all
-        keys = connection.keys("#{self.table_key}/*")
-        contents = []
-        keys.each do |key|
-          serialized = connection.get(key)
-          contents << Marshal.load(serialized)
-        end
-        contents
-      end
-
-      def find(id)
-        key = "#{self.table_key}/#{id.to_s}"
-        Marshal.load connection.get(key)
       end
 
     end

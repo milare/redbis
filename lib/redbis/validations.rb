@@ -42,11 +42,6 @@ module Redbis
         end
       end
 
-      def validations
-        @@validations ||= {}
-        @@validations
-      end
-    
       def add_validation(kind, cols)
         @@validations[kind] += cols
       end

@@ -21,7 +21,7 @@ module Redbis
       end
 
       def all
-        keys = connection.keys("#{self.table_key}/*")
+        keys = connection.keys("#{MASTER_KEY}/#{self.table_key}/*")
         contents = []
         keys.each do |key|
           serialized = connection.get(key)
@@ -31,8 +31,20 @@ module Redbis
       end
 
       def find(id)
-        key = "#{self.table_key}/#{id.to_s}"
+        key = "#{MASTER_KEY}/#{self.table_key}/#{id.to_s}"
         Marshal.load connection.get(key)
+      end
+
+      def first
+        keys = connection.keys("#{MASTER_KEY}/#{self.table_key}/*")
+        serialized = connection.get(keys.first)
+        Marshal.load serialized
+      end
+
+      def last
+        keys = connection.keys("#{MASTER_KEY}/#{self.table_key}/*")
+        serialized = connection.get(keys.last)
+        Marshal.load serialized
       end
 
     end

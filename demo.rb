@@ -6,6 +6,8 @@ class User < Redbis::Base
   field :bar, :default => 'foobar'
   
   use_key :people
+
+  has_many :posts
   
 end
 
@@ -19,6 +21,8 @@ class Post < Redbis::Base
   before_validation :define_body_field
 
   validates :presence, :body, :title
+
+  belongs_to :user
 
   def test_before_callback
     puts "before"
@@ -34,10 +38,14 @@ class Post < Redbis::Base
 end
 
 
-p = Post.new
+u = User.new
+u.save
+
+p = Post.new(:user_id => u.id)
 p.save
 
-p2 = Post.new(:title => 'new one')
+
+p2 = Post.new(:title => 'new one', :user_id => u.id)
 p2.save
 
 posts = Post.all

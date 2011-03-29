@@ -16,10 +16,7 @@ module Redbis
             singular_id = instance_eval "self.#{singular}_id"
             association_instance = singular.titleize.constantize.find(singular_id)
             association_table_key = association_instance.class.table_key
-            key = ''
-            self.instance_eval <<-ASSOCIATE, __FILE__, __LINE__ + 1
-              key = "#{MASTER_KEY}/#{association_table_key}/#{association_instance.id}/#{self.class.table_key}/#{self.id}"
-            ASSOCIATE
+            key = "#{MASTER_KEY}/associations/#{association_table_key}/#{association_instance.id}/#{self.class.table_key}/#{self.id}"
             self.class.connection.set(key, Marshal.dump(self))
           end
         end
@@ -94,7 +91,7 @@ module Redbis
         class_eval <<-ASSOC_METHOD, __FILE__, __LINE__ + 1
             def #{method_name.to_s}
               instance_id = self.id
-              str = "#{MASTER_KEY}/#{self.table_key}/" + instance_id.to_s + "/#{method_name.to_s}/*"
+              str = "#{MASTER_KEY}/associations/#{self.table_key}/" + instance_id.to_s + "/#{method_name.to_s}/*"
               keys = self.class.connection.keys(str)
               contents = []
               keys.each do |key|
